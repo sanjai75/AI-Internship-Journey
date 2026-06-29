@@ -1,11 +1,12 @@
-import google.generativeai as genai
+from openai import OpenAI
 
-# Paste your Gemini API Key here
-genai.configure(api_key="YOUR_API_KEY_HERE")
-model = genai.GenerativeModel("gemini-2.0-flash")
+client = OpenAI(
+    base_url="https://openrouter.ai/api/v1",
+    api_key="YOUR_OPENROUTER_API_KEY"
+)
 
 print("=" * 50)
-print("        AI PROGRAMMING ASSISTANT")
+print("      AI PROGRAMMING ASSISTANT")
 print("=" * 50)
 
 name = input("Enter your name: ")
@@ -15,19 +16,20 @@ print("Ask me anything about programming.")
 print("Type 'exit' to quit.\n")
 
 while True:
-    user_input = input("You: ")
 
-    if user_input.lower() == "exit":
-        print(f"\nGoodbye {name}! Have a great day!")
+    question = input("You: ")
+
+    if question.lower() == "exit":
+        print(f"\nGoodbye {name}!")
         break
 
-    try:
-        response = model.generate_content(user_input)
+    response = client.chat.completions.create(
+        model="openai/gpt-oss-120b:free",
+        messages=[
+            {"role": "user", "content": question}
+        ]
+    )
 
-        print("\nAI:")
-        print(response.text)
-        print("\n" + "-" * 50 + "\n")
-
-    except Exception as e:
-        print("\nError:", e)
-        print("\n" + "-" * 50 + "\n")
+    print("\nAI:")
+    print(response.choices[0].message.content)
+    print("-" * 50)
