@@ -1,4 +1,5 @@
 import os
+import glob
 from dotenv import load_dotenv
 from pypdf import PdfReader
 from sentence_transformers import SentenceTransformer
@@ -27,19 +28,27 @@ client = OpenAI(
     }
 )
 # -----------------------------
-# Read PDF
+# Load Multiple PDFs
 # -----------------------------
-reader = PdfReader("data/sample.pdf")
-
 text = ""
 
-for page in reader.pages:
-    page_text = page.extract_text()
-    if page_text:
-        text += page_text + "\n"
+pdf_files = glob.glob("data/*.pdf")
 
-print("PDF Loaded Successfully")
-print("Characters:", len(text))
+print(f"Found {len(pdf_files)} PDF files.\n")
+
+for pdf in pdf_files:
+    print(f"Loading: {pdf}")
+
+    reader = PdfReader(pdf)
+
+    for page in reader.pages:
+        page_text = page.extract_text()
+
+        if page_text:
+            text += page_text + "\n"
+
+print("\nAll PDF files loaded successfully!")
+print("Total Characters:", len(text))
 
 # -----------------------------
 # Split Text into Chunks
@@ -102,45 +111,83 @@ print("Embeddings stored successfully in ChromaDB!")
 # -----------------------------
 # Ask User Question
 # -----------------------------
-question = input("\nAsk a question about the PDF: ")
+while True:
+    question = input("\nAsk a question (type 'exit' to quit): ")
 
-# Convert question into embedding
-query_embedding = embedding_model.encode(question).tolist()
+    if question.lower() == "exit":
+        print("Goodbye!")
+        break
 
-# Search similar chunks
-results = collection.query(
-    query_embeddings=[query_embedding],
-    n_results=2
-)
+    # Convert question into embedding
+    query_embedding = embedding_model.encode(question).tolist()
 
-retrieved_docs = "\n".join(results["documents"][0])
+    # Search similar chunks
+    results = collection.query(
+        query_embeddings=[query_embedding],
+        n_results=2
+    )
 
-print("\nRelevant Context Found!\n")
+    retrieved_docs = "\n".join(results["documents"][0])
 
-# -----------------------------
-# Send to OpenRouter
-# -----------------------------
-response = client.chat.completions.create(
-    model="tencent/hy3:free",
-    messages=[
-        {
-            "role": "system",
-            "content": "Answer ONLY from the given context. If the answer is not found, say 'Not found in the document.'"
-        },
-        {
-            "role": "user",
-            "content": f"""
+    print("Retrieved Chunks:")
+
+    for i, doc in enumerate(results["documents"][0], start=1):
+        print(f"\nChunk {i}:")
+        print(doc[:200] + "...")
+
+    print("\nRelevant Context Found!\n")
+
+    response = client.chat.completions.create(
+        model="tencent/hy3:free",
+        messages=[
+            {
+                "role": "system",
+                "content": "Answer ONLY from the given context. If the answer is not found, say 'Not found in the document.'"
+            },
+            {
+                "role": "user",
+                "content": f"""
 Context:
 {retrieved_docs}
 
 Question:
 {question}
 """
-        }
-    ]
-)
+            }
+        ]
+    )
 
-print("\n==============================")
-print("Answer:\n")
-print(response.choices[0].message.content)
-print("==============================")
+    print("\n==============================")
+    print("Answer:\n")
+    print(response.choices[0].message.content)
+    print("==============================")
+    print(f"\nChunk {i}:")
+    print(doc[:200] + "...")
+
+    print("\nRelevant Context Found!\n")
+
+    response = client.chat.completions.create(
+        model="tencent/hy3:free",
+        messages=[
+            {
+                "role": "system",
+                "content": "Answer ONLY from the given context. If the answer is not found, say 'Not found in the document.'"
+            },
+            {
+                "role": "user",
+                "content": f"""
+Context:
+{retrieved_docs}
+
+Question:
+{question}
+"""
+            }
+        ]
+    )
+
+    print("\n==============================")
+    print("Answer:\n")
+    print(response.choices[0].message.content)
+    print("==============================")
+

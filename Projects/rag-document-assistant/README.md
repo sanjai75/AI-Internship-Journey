@@ -13,6 +13,7 @@ RAG Document Assistant is a simple Retrieval-Augmented Generation (RAG) applicat
 - Retrieve relevant document chunks
 - Generate answers using OpenRouter LLM
 - Reduces hallucinations by using document context
+- Supports multiple PDF documents
 
 ## Technologies Used
 
