@@ -1,94 +1,98 @@
-# Day 11 - Task 4
-# Rule-Based AI Agent
+from openai import OpenAI
+from config import OPENROUTER_API_KEY
 
-import random
-from datetime import datetime
+from tools.calculator import *
+from tools.datetime_tool import get_datetime
+from tools.summarizer import summarize
+from tools.fact_generator import random_fact
 
+client = OpenAI(
+    api_key=OPENROUTER_API_KEY,
+    base_url="https://openrouter.ai/api/v1"
+)
 
-# -----------------------------
-# Calculator Tool
-# -----------------------------
-def calculate(expression):
-    try:
-        return eval(expression)
-    except:
-        return "Invalid calculation."
-
-
-# -----------------------------
-# Date & Time Tool
-# -----------------------------
-def current_time():
-    now = datetime.now()
-    return f"Current Date: {now.strftime('%d-%m-%Y')}\nCurrent Time: {now.strftime('%H:%M:%S')}"
-
-
-# -----------------------------
-# Quote Tool
-# -----------------------------
-def random_quote():
-
-    quotes = [
-        "Believe in yourself.",
-        "Never stop learning.",
-        "Success comes from consistency.",
-        "Dream big and work hard.",
-        "Every day is a new opportunity."
-    ]
-
-    return random.choice(quotes)
-
-
-# -----------------------------
-# Weather Tool (Mock)
-# -----------------------------
-def weather(city):
-
-    weather_data = {
-        "chennai": "31°C, Sunny",
-        "bangalore": "26°C, Cloudy",
-        "hyderabad": "30°C, Clear Sky",
-        "delhi": "35°C, Hot",
-        "mumbai": "29°C, Rainy"
-    }
-
-    return weather_data.get(city.lower(), "Weather information not available.")
-
-
-# -----------------------------
-# AI Agent
-# -----------------------------
-print("===== AI Assistant =====")
+print("🤖 AI Agent Started")
+print("Type 'exit' to quit.\n")
 
 while True:
 
-    user = input("\nYou: ")
+    user = input("You: ")
 
     if user.lower() == "exit":
-        print("AI Agent: Goodbye!")
+        print("Goodbye!")
         break
 
-    elif "time" in user.lower() or "date" in user.lower():
-        print("\nAI Agent:")
-        print(current_time())
+    prompt = f"""
+You are an AI Agent.
 
-    elif "motivation" in user.lower() or "quote" in user.lower():
-        print("\nAI Agent:")
-        print(random_quote())
+Available tools:
 
-    elif "weather" in user.lower():
+1. calculator
+2. datetime
+3. summarizer
+4. fact
 
-        city = input("Enter city: ")
+Reply ONLY with one word.
 
-        print("\nAI Agent:")
-        print(weather(city))
+calculator
+datetime
+summarizer
+fact
 
-    elif any(op in user for op in ["+", "-", "*", "/"]):
+User Request:
+{user}
+"""
 
-        print("\nAI Agent:")
-        print(calculate(user))
+    response = client.chat.completions.create(
+        model="tencent/hy3:free",
+        messages=[
+            {"role":"user","content":prompt}
+        ]
+    )
+
+    tool = response.choices[0].message.content.strip().lower()
+
+    print("Selected Tool:", tool)
+
+    if tool == "datetime":
+
+        dt = get_datetime()
+
+        print("Date:", dt["date"])
+        print("Time:", dt["time"])
+
+    elif tool == "fact":
+
+        print(random_fact())
+
+    elif tool == "summarizer":
+
+        text = input("Enter paragraph:\n")
+
+        print(summarize(text))
+
+    elif tool == "calculator":
+
+        a = float(input("First Number: "))
+        b = float(input("Second Number: "))
+
+        op = input("Operation (+,-,*,/): ")
+
+        if op == "+":
+            print(add(a,b))
+
+        elif op == "-":
+            print(subtract(a,b))
+
+        elif op == "*":
+            print(multiply(a,b))
+
+        elif op == "/":
+            print(divide(a,b))
+
+        else:
+            print("Invalid Operation")
 
     else:
 
-        print("\nAI Agent:")
-        print("Sorry, I don't know which tool to use for that request.")
+        print("I don't know which tool to use.")
