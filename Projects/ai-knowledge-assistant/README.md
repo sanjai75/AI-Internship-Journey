@@ -1,47 +1,48 @@
 # AI Knowledge Assistant
 
-An end-to-end AI application that combines Retrieval-Augmented Generation (RAG), AI tools, and conversation memory.
+## Overview
+What this project does.
 
 ## Features
+- PDF question answering using RAG
+- Calculator
+- Date & Time
+- Text Summarizer
+- Conversation Memory
+- Error Handling
 
-- Ask questions from PDF documents
-- Perform calculations
-- Get current date and time
-- Summarize text
-- Maintain conversation memory
-- Display document source information
-- Single Streamlit chat interface
-
-## Technologies Used
-
-- Python
-- Streamlit
-- OpenRouter API
-- ChromaDB
-- Sentence Transformers
-- PyPDF
+## Architecture
+Explain:
+User → Streamlit App → AI Agent → Tool Router → RAG/Tools → LLM → Response
 
 ## Project Structure
+Show your folders and files.
 
-ai-knowledge-assistant/
-├── app.py
-├── agent.py
-├── config.py
-├── tools/
-├── rag/
-├── data/
-└── vector_db/
-
-## Setup
-
-Install dependencies:
-
+## Installation
 pip install -r requirements.txt
 
-Create a `.env` file:
+## Configuration
+Explain API key setup using .env.
 
-OPENROUTER_API_KEY=your_api_key_here
+## How to Run
+python -m streamlit run app.py
 
-Run the application:
+## How It Works
+Explain how the AI Agent selects calculator, datetime, summarizer, or RAG.
 
-streamlit run app.py
+## Error Handling
+Mention:
+- Empty input
+- Invalid PDF
+- Missing API key
+- Calculator failure
+- No relevant document found
+
+## Testing
+Mention 20 test cases were tested.
+
+## Technologies Used
+Python, Streamlit, OpenRouter, RAG, Embeddings, PyPDF.
+
+## Future Improvements
+Voice input, more tools, better memory, database storage, etc.
