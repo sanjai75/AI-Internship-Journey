@@ -55,6 +55,9 @@ def run_agent(user):
 
     global memory
 
+    if not user or not user.strip():
+        return "Please enter a question or request."
+
     # Show history
     if user.lower() == "history":
 
@@ -103,18 +106,24 @@ rag
 """
 
 
-    response = client.chat.completions.create(
+    try:
 
-        model="tencent/hy3:free",
+        response = client.chat.completions.create(
+            model="tencent/hy3:free",
+            messages=[
+                {
+                    "role": "user",
+                    "content": prompt
+                }
+            ]
+        )
 
-        messages=[
-            {
-                "role": "user",
-                "content": prompt
-            }
-        ]
+    except Exception:
 
-    )
+        return (
+            "AI service is currently unavailable. "
+            "Please check the API configuration and try again."
+        )
 
 
     tool = response.choices[0].message.content.strip().lower()

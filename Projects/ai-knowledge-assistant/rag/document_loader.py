@@ -21,20 +21,37 @@ def load_documents(data_folder="data"):
 
         print(f"Loading: {pdf}")
 
-        reader = PdfReader(pdf)
+        try:
 
-        for page_no, page in enumerate(reader.pages, start=1):
+            reader = PdfReader(pdf)
 
-            page_text = page.extract_text()
+            for page_no, page in enumerate(
+                reader.pages,
+                start=1
+            ):
 
-            if page_text:
+                page_text = page.extract_text()
 
-                documents.append({
-                    "file": os.path.basename(pdf),
-                    "page": page_no,
-                    "text": page_text
-                })
+                if page_text:
 
-    print("\nAll PDF files loaded successfully!")
+                    documents.append({
+                        "file": os.path.basename(pdf),
+                        "page": page_no,
+                        "text": page_text
+                    })
+
+        except Exception:
+
+            print(
+                f"Could not read {os.path.basename(pdf)}."
+            )
+
+            print(
+                "Please check whether the PDF is valid."
+            )
+
+            continue
+
+    print("\nAll valid PDF files loaded successfully!")
 
     return documents
